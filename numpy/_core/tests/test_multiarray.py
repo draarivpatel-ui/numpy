@@ -2120,6 +2120,20 @@ class TestMethods:
         assert arr.any(dtype=object, keepdims=True).dtype == object
         assert arr.all(dtype=object, keepdims=True).dtype == object
 
+    def test_any_and_all_positional_arguments(self):
+        # gh-33267: the positional arguments of ndarray.any and ndarray.all
+        # must match those of np.any and np.all (axis, out, keepdims)
+        arr = np.array([[True, False, True],
+                        [False, False, True]])
+        for method, expected in [(arr.any, np.any(arr, 0)),
+                                 (arr.all, np.all(arr, 0))]:
+            out = np.zeros(3, dtype=bool)
+            assert_equal(method(0, out), expected)
+            assert_equal(out, expected)
+            assert_equal(method(0, None, True).shape, (1, 3))
+        assert_raises(TypeError, arr.any, 0, None, None, True)
+        assert_raises(TypeError, arr.all, 0, None, None, True)
+
     def test_compress(self):
         tgt = [[5, 6, 7, 8, 9]]
         arr = np.arange(10).reshape(2, 5)
